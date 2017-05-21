@@ -3,7 +3,7 @@
 ## Dependencies
 
 ### Python3.4 and Anaconda
-conda create -n python34 python=3.4 anaconda
+conda create -n stock_trader python=3.4 anaconda
 
 ### zipline
 conda install -c Quantopian zipline
