@@ -1,3 +1,8 @@
+"""
+    Folked From:
+        http://www.thealgoengineer.com/2014/download_sp500_data/
+"""
+
 import urllib.request
 from bs4 import BeautifulSoup
 
