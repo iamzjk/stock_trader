@@ -3,32 +3,40 @@
     Trader Functions
 """
 
-import pandas_datareader.data as web
 import datetime
 
+import pandas as pd
+import pandas_datareader.data as web
 
-def read_data(symbols, start, end=None):
+from populate_sp500_tickers import read_sp500_tickers_from_mongo
+
+
+def read_data(tickers, start, end):
     """
     Args:
-        symbols (list or str): 'AAPL', ['AAPL', 'F']
+        tickers (list or str): 'AAPL', ['AAPL', 'F']
         start (str): 'YYYY-MM-DD'
         end (str): 'YYYY-MM-DD'
 
     Returns:
         panel or dataframe
-    """    
+    """
 
     start_date = datetime.datetime.strptime(start, '%Y-%m-%d')
-    today = datetime.datetime.today()
-    end_date = datetime.datetime.strptime(end, '%Y-%m-%d') if end else today
+    end_date = datetime.datetime.strptime(end, '%Y-%m-%d')
 
-    pf = web.DataReader(symbols, 'google', start_date, end_date)
+    pf = web.DataReader(tickers, 'google', start_date, end_date)
 
     return pf
 
 
 def find_events(pf, lookback=20):
     """
+    Create an event study with the signal being:
+    Bollinger value for the equity today <= -2.0
+    Bollinger value for the equity yesterday >= -2.0
+    Bollinger value for SPY today >= 1.0 or 1.2
+
     Args:
         pf (panel): output of read_data function
         lookback (int): how many days TAs look back
@@ -37,7 +45,7 @@ def find_events(pf, lookback=20):
         dataframe
     """
 
-    df_close = pd['Close']
+    df_close = pf['Close']
     df_ma = pd.rolling_mean(df_close, lookback)
     df_std = pd.rolling_std(df_close, lookback)
     df_bollingerbands = (df_close - df_ma) / df_std
@@ -45,5 +53,7 @@ def find_events(pf, lookback=20):
 
 if __name__ == '__main__':
 
-    data = read_data('AAPL', '2017-05-01', '2017-06-01')
-    print(data)
+    today = str(datetime.date.today())
+    tickers = read_sp500_tickers_from_mongo(today)
+    pf = read_data(tickers + ['SPY'], '2017-05-01', today)
+    pass

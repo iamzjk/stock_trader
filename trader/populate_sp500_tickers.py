@@ -65,6 +65,24 @@ def store_sp500_symbols_to_mongo(sp500):
     db.sp500.insert_many(sp500)
 
 
+def read_sp500_tickers_from_mongo(report_date):
+    """
+
+    Args:
+        report_date: YYYY-MM-DD
+    """
+    client = MongoClient(Config.MONGO_MLAB_URI)
+    db = client.stock_trader
+
+    report_date = int(report_date.replace('-', ''))
+    data = db.sp500.find(
+        {'report_date': report_date},
+        {'ticker': 1, '_id': 0}
+    )
+
+    return [item['ticker'] for item in list(data)]
+
+
 if __name__ == '__main__':
     try:
         populate_sp500()
